@@ -1,0 +1,86 @@
+#1)
+from random import *
+from math import *
+def main(): #
+    sum = 0.0
+    NUMBER_OF_ENTERIES = 5
+    numbers = [] #กำหนดให้ Numberเก็บเป็น list
+    
+    print("Please enter",NUMBER_OF_ENTERIES, "numbers : ")
+    for i in range(0, 5):
+        num = eval(input("Enter number " +str(i)+ " : "))
+        numbers += [num]
+        sum += num
+    print()
+    
+    print(end= "Numbers entered: ")
+    
+    for num in range(0,1):
+        print(numbers)
+        print()
+
+    print("Average:",sum/5 )
+main()
+
+
+
+
+##result
+# Please enter 5 numbers : 
+
+# Enter number 0 : 9.0
+
+# Enter number 1 : 0.2
+
+# Enter number 2 : 100.0
+
+# Enter number 3 : 15.3
+
+# Enter number 4 : 3.5
+
+# Numbers entered: [9.0, 0.2, 100.0, 15.3, 3.5]
+
+# Average: 25.6
+
+        
+
+# #2)
+
+def sum(lst):
+    result = 0; 
+    for i in lst: 
+        result += i
+    return result
+
+def clear(lst):
+    for i in range(len(lst)):
+        lst[i] = 0 
+        
+def random_list(n):
+    result = [n] 
+    for i in range(0, 4): 
+        rand = randrange(0, 99)
+        result += [rand] 
+    return result
+
+def main():
+    
+    a = [2, 4, 6, 8]
+    print('List:',a)
+    print('Sum(a):',sum(a))  #sum
+    clear(a) 
+    print('AfterCler(a))',a) #[0,0,0,0]
+
+    a = random_list(5)
+    print('Print list(a):',a)
+    print('SumRandom(a):',sum(a))
+
+main()
+
+
+# Result
+# List: [2, 4, 6, 8]
+# Sum(a): 20
+# AfterCler(a)) [0, 0, 0, 0]
+# Print list(a): [5, 23, 19, 91, 62]
+# SumRandom(a): 200
