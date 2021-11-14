@@ -1,0 +1,402 @@
+import pygame
+import os
+import random
+from pygame.display import update
+import pygame.freetype
+import time
+from pygame import image
+from pygame.constants import K_ESCAPE ,K_KP_ENTER
+from pygame import mixer
+from pygame.mixer import Channel, pause, stop 
+
+#GEOMETRY
+WIDTH = 500
+HEIGHT = 600
+FPS = 30   #FRAME RATE PER SECOND
+ 
+#color
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+BLUE = (0, 0, 255)
+BLUES =(174, 224, 245)
+PINK = ('#FFFF33')
+GREENO = ('#CCFF99')
+GRAYH = ('#87907E')
+graytxt = (112,128,144)
+Lgraytxt = (165,175,185)
+
+BG = pygame.transform.scale(pygame.image.load(os.path.join("img", "background-black.png")), (WIDTH, HEIGHT))
+#initalize Pygame
+pygame.init()
+
+screen = pygame.display.set_mode((WIDTH, HEIGHT)) #SetUI
+pygame.display.set_caption('PYGAME MSIT611 2021 T^T')
+
+#Add Sound
+pygame.mixer.init()
+mixer.init()
+Sound = 'Sound'
+s1 = mixer.Sound(os.path.join(Sound,'mixkit-magical-coin-win-1936.wav'))
+s2 = mixer.Sound(os.path.join(Sound,'Ghost-mixkit-boxer-getting-hit-2055.wav'))
+s3 = mixer.Sound(os.path.join(Sound,'Diamond-mixkit-retro-arcade-casino-notification-211.wav'))
+s4 = mixer.Sound(os.path.join(Sound,'End-mixkit-arcade-fast-game-over-233.wav'))
+s5 = mixer.Sound(os.path.join(Sound,'Bo-mixkit-game-flute-bonus-2313.wav'))
+
+#Path
+game_folder = os.path.dirname(__file__) #Path
+img_folder = os.path.join(game_folder,'img') #join Path
+
+#Score
+Score=0
+pygame.font.init()
+Font1 = pygame.font.SysFont('CHERL.ttf',32) #InstallFont to device and Sys import
+Imx = 10
+Imy = 10
+Clock = pygame.time.Clock()
+
+def scoreS(x,y):
+    text = Font1.render('Score :' +str(Score),True, (WHITE))
+    screen.blit(text,(x,y))
+
+txt1 = 1000
+Font1 = pygame.font.SysFont('AltoneTrial-Bold.ttf',25) #InstallFont to device and Sys import
+Ix = 200
+Iy = 10
+def BoboX(x,y):
+    text = Font1.render(f'Pink Bonus:{txt1}',True, (WHITE))
+    screen.blit(text,(x,y))
+
+#End GAME
+EndGame = 'Game Over,Your Crash the Skull-Ghost!!'
+End = 'Game Over,Your Hits the Ghost & Score not 100'
+SHOWTEXT = (150,150,150)
+TXTCENTER = (250,250)
+Count = 0        
+
+def Crash(): #when crash Skull
+        txt = Font1.render(EndGame,True,SHOWTEXT)
+        # txt = Font1.render(f'{Score}'+ EndGame,True,GAMEOVERTEXT)
+        txt_rect = txt.get_rect()
+        txt_rect.center = TXTCENTER
+        screen.blit(txt,txt_rect)
+        pygame.display.update()
+        pygame.time.wait(5000)
+        print('Get Crash')
+
+def Ending(): #when Amount -
+        txt = Font1.render(End,True,SHOWTEXT)
+        # txt = Font1.render(f'{Score}'+ EndGame,True,GAMEOVERTEXT)
+        txt_rect = txt.get_rect()
+        txt_rect.center = TXTCENTER
+        screen.blit(txt,txt_rect)
+        pygame.display.update()
+        pygame.time.wait(3000)
+        print('Get Ending')
+
+#Class 1  Main All Function 
+class Submarine(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self) #interitance Class
+        sub_img = os.path.join(img_folder,'ShipSubMarineHull.png')
+        self.image = pygame.image.load(sub_img).convert()
+        self.image.set_colorkey(BLACK) #set backgrond birght
+        self.rect = self.image.get_rect()
+        #wide higth
+        self.rect.centerx = WIDTH / 2
+        self.rect.bottom = HEIGHT - 10
+        self.speedx = 0
+    
+    def update(self):
+        self.speedx = 0
+        #CheckFunction State
+        keystate = pygame.key.get_pressed()
+        if keystate[pygame.K_LEFT]:
+            self.speedx = -5
+        if keystate[pygame.K_RIGHT]:
+            self.speedx = 5
+        self.rect.x += self.speedx   #ไม่เกินขอบแนวนอน
+        if self.rect.right > WIDTH:
+            self.rect.right = WIDTH
+        if self.rect.left < 0:
+            self.rect.left = 0
+        print(self.rect.centerx)
+
+    def shoot(self): 
+        bullet = Bullet(self.rect.centerx, self.rect.top) #สร้างกระสุน
+        all_sprites.add(bullet) #เพิ่มกระสุน
+        bullets.add(bullet) #Attribute รับค่าจาก Function Hits Bullet
+        print('Get Submarine')
+
+#Class 2 Enemy
+class Coinz(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        sub_img = os.path.join(img_folder,'golden_.png')
+        self.image = pygame.image.load(sub_img).convert()
+        self.image.set_colorkey(BLACK) #set backgrond  birght
+        self.rect = self.image.get_rect()#ดึงความสามารถของสี่เหลี่ยม
+        self.rect.x = random.randrange(WIDTH - self.rect.width) # Y Ramdom ค่าพิกัดให้สี่เหลี่ยม ลบกับความกว้างของตัวละคร
+        self.rect.y = random.randrange(-100, -40) 
+        self.speedy = random.randrange(1, 5) #ความเร็วของตัวละคร
+
+    #สั่งให้ตัว Surface ขยับ
+    def update(self):
+        self.rect.y += self.speedy
+        if self.rect.top > HEIGHT + 20:  #มากกว่าขอบจอลงมา
+            self.rect.y = random.randrange(-100, -40 ) #จอ#แนวนตั้ง
+            self.speedy = random.randrange(1, 5) #ความเร็วของตัวละคร
+            print('Get Coinz')
+#Class 3
+class BonusExtraScore(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        sub_img = os.path.join(img_folder,'box_pink.png')
+        self.image = pygame.image.load(sub_img).convert()
+        self.image.set_colorkey(BLACK)
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randrange(WIDTH - self.rect.width) 
+        self.rect.y = random.randrange(-100, -40) 
+        self.speedy = random.randrange(1, 15)
+    
+    def update(self):
+        self.rect.y += self.speedy
+        if self.rect.top > HEIGHT + 20:  #มากกว่าขอบจอลงมา
+            self.rect.y = random.randrange(-100, -40 ) #จอ#แนวนตั้ง
+            self.speedy = random.randrange(1, 15) #ความเร็วของตัวละคร
+            print('Get BonusExtraScore')
+
+#Class 4 Ghost
+class Ghost(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        sub_img = os.path.join(img_folder,'goldskull.png')
+        self.image = pygame.image.load(sub_img).convert()
+        self.image.set_colorkey(WHITE)
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randrange(WIDTH - self.rect.width) 
+        self.rect.y = random.randrange(-100, -40) 
+        self.speedy = random.randrange(1, 10)
+    
+    def update(self):
+        self.rect.y += self.speedy
+        if self.rect.top > HEIGHT + 20:  #มากกว่าขอบจอลงมา
+            self.rect.y = random.randrange(-100, -40 ) #จอ#แนวนตั้ง
+            self.speedy = random.randrange(1, 10) #ความเร็วของตัวละคร
+
+#Bullet
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y): #Update posiotion bullet
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.Surface((5, 10)) #UI กระสุน
+        self.image.fill(PINK) #สีกระสุน
+        self.rect = self.image.get_rect() #ดึง image
+        self.rect.bottom = y  #แนวนอน
+        self.rect.centerx = x #แนวนตั้ง
+        self.speedy = -7
+    
+    def update(self):   #Update Enemy
+        self.rect.y += self.speedy
+        if self.rect.bottom < 0:   #ติดขอบจอบน 
+            self.kill() #ทำให้ตัวเองหายไป
+            print('Get Bullet')
+
+
+#Add submarine
+submarine = Submarine()        
+all_sprites = pygame.sprite.Group()
+all_sprites.add(submarine)  
+
+#ประกาศตัวละครใหม่ และดพิ่มค่า
+enemy = pygame.sprite.Group() 
+bullets = pygame.sprite.Group()
+BonusxB = pygame.sprite.Group()
+
+for i in range(5):  #จำนวนตัว
+    em = Coinz()  #object  = Enemy 
+    all_sprites.add(em)
+    enemy.add(em)
+
+#ประกาศBonus
+Bonusx = pygame.sprite.Group()
+for i in range(1):
+    Bo = BonusExtraScore()
+    all_sprites.add(Bo)
+    Bonusx.add(Bo)
+
+
+GhostyKill = pygame.sprite.Group()
+for i in range (1):
+    Ghosty = Ghost()
+    all_sprites.add(Ghosty)
+    GhostyKill.add(Ghosty)
+
+
+def HighScore(): 
+                for i in range(3,0,-1):
+                    i -1 
+                    txt = Font1.render(f' Bonus Time !! wait {i} ',str(Count) ,True,(WHITE))
+                    txt_rect = txt.get_rect()
+                    txt_rect.center = TXTCENTER
+                    screen.blit(txt,txt_rect)
+                    print(f' CHECK---{i}---TIME ')  
+                    pygame.display.update()
+                    pygame.time.wait(3000)
+                    print('LOOP START')
+
+                i = 0
+                while i:
+                    if i == 0:
+                        all_sprites.draw(screen) == False
+                        all_sprites.update() == False 
+                        break
+                else:
+                    print(' ELSE ')  
+                    Score = 0
+                    def scoreS(x,y):
+                        text = Font1.render('Score :' +str(Score),True, (GREENO))
+                        screen.blit(text,(x,y)) 
+                    scoreS(Imx,Imy)
+                    print('DISPLAY UPDATE')
+                    class BB(pygame.sprite.Sprite):
+                        def __init__(self):
+                            pygame.sprite.Sprite.__init__(self)
+                            sub_img = os.path.join(img_folder,'box_blue.png')
+                            self.image = pygame.image.load(sub_img).convert()
+                            self.image.set_colorkey(BLACK)
+                            self.rect = self.image.get_rect()
+                            self.rect.x = random.randrange(WIDTH - self.rect.width) 
+                            self.rect.y = random.randrange(-100, -40) 
+                            self.speedy = random.randrange(1, 15)
+    
+                        def update(self):
+                            self.rect.y += self.speedy
+                            if self.rect.top > HEIGHT + 20:  #มากกว่าขอบจอลงมา
+                                self.rect.y = random.randrange(-100, -40 ) #จอ#แนวนตั้ง
+                                self.speedy = random.randrange(1, 8) #ความเร็วของตัวละคร
+
+                    print('CALL CLASS BB')
+                    BonusxB = pygame.sprite.Group()
+                    bullets = pygame.sprite.Group()
+
+
+                    for i in range(20):
+                        BoX = BB()
+                        all_sprites.add(BoX)
+                        BonusxB.add(BoX)      
+                        print('CALL CLASS BB BONUSX')
+                    
+                    hits = pygame.sprite.groupcollide(BonusxB, bullets, True, True) #ลบค่าออกทั้งคู่
+                    if hits:
+                        Score =+1000
+                        s3.play()
+                        BoX = BB()
+                        all_sprites.add(BoX) 
+                        BonusxB.add(BoX)
+                    
+                    all_sprites.draw(screen)
+                    all_sprites.update()
+
+                    print('CALL CLASS BulletBonusX and Update SCORE')
+                    pygame.display.update() 
+                    print('Loop Is Running')
+                    
+def main():
+    #run
+    running = True
+    FPS = 60
+    Score = 0
+    def scoreS(x,y):
+        text = Font1.render('Score :' +str(Score),True, (WHITE))
+        screen.blit(text,(x,y))
+
+    while running:
+        Clock.tick(FPS)
+        scoreS(Imx,Imy)
+        BoboX(Ix,Iy)
+        pygame.display.update()
+
+    #Check Bullet
+        hits = pygame.sprite.groupcollide(enemy, bullets, True, True) #ลบค่าออกทั้งคู่
+        if hits:
+            s1.play()
+            Score +=100
+            em = Coinz()  #class = Enemy
+            all_sprites.add(em)
+            enemy.add(em)
+            print('Get hits')
+
+        hits1 = pygame.sprite.groupcollide(Bonusx, bullets, True, True) 
+        if hits1:
+            s3.play()
+            Score +=1000
+            Bo = BonusExtraScore()
+            all_sprites.add(Bo)
+            Bonusx.add(Bo)
+            print('Get Hits1')
+            HighScore()
+            
+        hits = pygame.sprite.groupcollide(GhostyKill, bullets, True, True) 
+        if hits:
+            s2.play()
+            Score -=100
+            Ghosty = Ghost()
+            if Score <= 0 :
+                Ending()
+            all_sprites.add(Ghosty)
+            GhostyKill.add(Ghosty)
+            
+
+        hits = pygame.sprite.spritecollide(submarine, GhostyKill, False) #Delete
+        if hits:
+            s4.play()
+            running = False
+            Crash()
+            print('Hits Game Over !!',str(Score))
+
+        screen.blit(BG, (0,0))
+        all_sprites.draw(screen)
+        all_sprites.update()
+        pygame.display.update() 
+        print('MAIN . RUN UPDATE')
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    submarine.shoot()
+            
+                if event.key == K_ESCAPE:
+                    running = False
+
+
+def main_menu():
+    running = True
+    while running:
+        screen.blit(BG, (0,0))
+        title_label = Font1.render("Press Spece Bar to begin...", 1, (255,255,255))
+        screen.blit(title_label, (WIDTH - HEIGHT/2, 330))    
+        
+        pygame.display.update() 
+        for event in pygame.event.get():
+
+            if event.type == pygame.QUIT:
+                running = False
+
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    main()
+
+                    # submarine.shoot()
+                    
+                    if event.key == K_ESCAPE:
+                        running = False
+    pygame.quit()
+
+
+main_menu()
+
+
+
